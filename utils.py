@@ -8,11 +8,11 @@ def get_file_list(file_position):
     file_list = os.listdir(file_position)
     # 删除非.dat文件 word这些
     # print(file_list)
-    for i in range(len(file_list) - 1, -1, -1):
+    for i in range(len(file_list)-1,-1,-1):
         if not file_list[i].endswith('.dat'):  # 检查文件类型，word什么的在处理list里删了
             del file_list[i]  # 直接正序索引然后list.remove(element)的话这个迭代器里索引按照原来的数组索引递增，每一个for
             # 索引加一，但是remove后本来下一个文件的实际索引会少一，所以只会处理一半的元素、
-            #  解决办法：倒序索引
+                              #  解决办法：倒序索引
 
     # print(file_list)
     # 输出路径
@@ -36,7 +36,7 @@ def get_test_condition(file_name):
     else:
         fit_order, harm_order = 1, '2'
 
-    if not file_name.find('down') == -1:
+    if not file_name.find('down')== -1:
         Mz = 'down'
     elif not file_name.find('up') == -1:
         Mz = 'up'
@@ -70,7 +70,7 @@ def find_first_last(data, Bmax):
     return [first, -1 - last]
 
 
-def fit_and_plot(file_name, data, pos, fit_result, out_path, test_condition):
+def fit_and_plot(file_name, data, B_max, fit_result, out_path, test_condition):
     v_w = data[:, 1]  # 谐波电压值，暂未说明几次谐波
     B = data[:, 0]
 
@@ -81,10 +81,12 @@ def fit_and_plot(file_name, data, pos, fit_result, out_path, test_condition):
     if not (file_name.find('1w') == -1):  # 1w
         fit_order = 2
         har_order = '1'
-        # B = B[2*pos[0]:2*pos[1]]
-        # v_w = v_w[2*pos[0]:2*pos[1]]  # 只要小场部分
+        pos = find_first_last(data, 2*B_max)
+        B = B[pos[0]:pos[1]]
+        v_w = v_w[pos[0]:pos[1]]  # 只要小场部分
     else:
         fit_order, har_order = 1, '2'
+        pos = find_first_last(data, B_max)
         B = B[pos[0]:pos[1]]
         v_w = v_w[pos[0]:pos[1]]  # 只要小场部分
     # 使用二次拟合谐波电压和场的曲线 ， 得到的f1是拟合的多项式系数，是一个数组
@@ -118,14 +120,16 @@ def fit_and_plot(file_name, data, pos, fit_result, out_path, test_condition):
 
     figure.clear()  # 释放内存,没有的话 会把不同曲线画在一个图里，越到后面越多曲线
 
-
 def caculate_DL(fit_result):
-    delta_Bx = []  # 计算结果
-    for i in range(len(fit_result) - 1):
-        if fit_result[i]['current'] == fit_result[i + 1]['current'] and fit_result[i]['Mz'] == fit_result[i + 1]['Mz']:
-            if fit_result[i]['harm_order'] == '1' and fit_result[i + 1]['harm_order'] == '2':
-                delta_Bx_1 = 0 - 2 * fit_result[i + 1]['fit_value'] / fit_result[i]['fit_value']
-                delta_Bx.append({'current': fit_result[i]['current'],
-                                 'Mz': fit_result[i]['Mz'],
-                                 'deltaB_x': delta_Bx_1})
+    delta_Bx=[] #计算结果
+    for i in range(len(fit_result)-1):
+        if fit_result[i]['current'] == fit_result[i+1]['current'] and fit_result[i]['Mz'] == fit_result[i+1]['Mz']:
+            if fit_result[i]['harm_order']=='1' and fit_result[i+1]['harm_order']=='2':
+                delta_Bx_1 = 0- 2 * fit_result[i+1]['fit_value']/fit_result[i]['fit_value']
+                delta_Bx.append({'current':fit_result[i]['current'],
+                                 'Mz':fit_result[i]['Mz'],
+                                 'deltaB_x':delta_Bx_1})
     return delta_Bx
+
+            
+            
