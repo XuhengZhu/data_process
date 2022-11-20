@@ -136,8 +136,8 @@ def fit_and_plot(file_name, data, B_max, fit_result, out_path, test_condition):
 
 #  同时测一次和二次谐波电压的数据
 def fit_and_plot_1(file_name, data, B_max, fit_result, out_path, test_condition):
-    v_2w = data[:, 1]  # 原.dat第三列是二次，第四列是一次
-    v_1w = data[:,2]
+    v_1w = data[:, 1]  # 原.dat第三列是二次，第四列是一次
+    v_2w = data[:, 2]
     B = data[:, 0]
 
     fit_order = 0  # 拟合阶数
@@ -149,19 +149,17 @@ def fit_and_plot_1(file_name, data, B_max, fit_result, out_path, test_condition)
     v_2w = v_2w[pos[0]:pos[1]]
 
     # 使用二次拟合谐波电压和场的曲线 ， 得到的f1是拟合的多项式系数，是一个数组
-    f1 = np.polyfit(B, v_1w, 1)  # f1是一个数组，其中第一个是最高阶项拟合系数，次之次高阶 print("数据类型",type(f1))
-    f2 = np.polyfit(B, v_2w, 2)
+    f1 = np.polyfit(B, v_1w, 2)  # f1是一个数组，其中第一个是最高阶项拟合系数，次之次高阶 print("数据类型",type(f1))
+    f2 = np.polyfit(B, v_2w, 1)
 
+    eff_field = -0.002 * f2[0]/f1[0] # v_2w的单位是uV，1w的单位是mV，二次的相当于数值增大了1000倍因此除以1000
+    test_condition['fit_value'] = eff_field
 
     # 下面四行是绘图用的数据
     p1 = np.poly1d(f1, False, variable='B')
     p2 = np.poly1d(f2, False, variable='B')
     v_1w_fit = p1(B)  # 拟合谐波电压值
     v_2w_fit = p2(B)
-
-    eff_field = -2000 * f2[0]/f1[0] # v_2w的单位是uV，1w的单位是mV，因此乘上1000
-    test_condition['fit_value'] = eff_field
-
     #  绘图 1w
     plot1 = plt.plot(B, v_1w, 's', label="original values")
     plot2 = plt.plot(B, v_1w_fit, "r", label="polyfit values")
@@ -195,38 +193,23 @@ def fit_and_plot_1(file_name, data, B_max, fit_result, out_path, test_condition)
 
     figure.clear()  # 释放内存,没有的话 会把不同曲线画在一个图里，越到后面越多曲线
 
+#  画有效场对于电流的图,同时测一次和二次用
+def plot_field(fit_result,out_path):
+    current, eff_field = [0,], [0,]
+    for i in range(len(fit_result) - 1):
+        current.append(fit_result[i]['current'])
+        eff_field.append(fit_result[i]['fit_value'])
+    plot1 = plt.plot(current, eff_field, 's', label="eff_field_DL")
 
-    # 转换成多项式
-    # test_condition['fit_value'] = f1[0]
-    '''
-    fit_result.append(test_condition)  # 写入测试条件
-
-    p1 = np.poly1d(f1, False, variable='B')
-   
-    v_w_fit = p1(B)  # 拟合谐波电压值
-    '''
-
-    '''
-    #  绘图
-    plot1 = plt.plot(B, v_1w, 's', label="original values")
-    plot2 = plt.plot(B, v_1w_fit, "r", label="polyfit values")
-
-    plt.xlabel('B')
-    plt.ylabel("V_" + har_order + "w")
+    plt.xlabel('I')
+    plt.ylabel("B_DL" )
     plt.legend(loc=4)  # 指定Legend的位置在右下角
-    plt.title(file_name)
-
+    plt.title('B_DL vs I')
     figure = plt.gcf()  # 获取当前图像
-    # figure.show()
-
-    # figure.savefig("谐波.png", dpi="figure",)  # save the current figure
-    # 删除filename中的后缀名.dat
-    file_name = file_name[:-4]
-
+    file_name = 'Mz ='+fit_result[0]['Mz']+'result'
     figure.savefig(out_path + file_name + '.png')
-
     figure.clear()  # 释放内存,没有的话 会把不同曲线画在一个图里，越到后面越多曲线
-    '''
+
 
 def caculate_DL(fit_result):
     delta_Bx=[] #计算结果

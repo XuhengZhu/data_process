@@ -19,5 +19,6 @@ for file_name in file_list:
     utils.fit_and_plot_1(file_name, data, B_max, fit_result, out_path, test_condition)
     fit_result.append(test_condition)
 
+utils.plot_field(fit_result,out_path)
 
 pprint.pprint(fit_result)
