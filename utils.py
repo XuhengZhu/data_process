@@ -47,6 +47,20 @@ def get_test_condition(file_name):
     return test_condition
     # 获取条件结束
 
+#  同时测一次和二次谐波电压的数据
+def get_test_condition_1(file_name):
+    match = r'\d+\.\d+(?=mA)'  # 提取测试电流数值
+    current = float(re.search(match, file_name).group())
+
+    if not file_name.find('down') == -1:
+        Mz = 'down'
+    elif not file_name.find('up') == -1:
+        Mz = 'up'
+    else:
+        Mz = '0'  # 数据保存的时候没有表明，考虑直接删了这个数据或者画图跳过
+
+    test_condition = {'current': current, 'Mz': Mz, 'fit_value': 0}
+    return test_condition
 
 def load_data(file_position, file_name):
     data_name = file_position + "\\" + file_name  # 为了更改起来更方便
@@ -59,7 +73,7 @@ def load_data(file_position, file_name):
     data = data[data[:, 0].argsort()]  # 按照第一列（磁场）降序排序
 
     return data
-
+#   这个两种通用
 
 def find_first_last(data, Bmax):
     "找到小场范围磁场的数据范围"
@@ -69,7 +83,7 @@ def find_first_last(data, Bmax):
     last = next(index for index, value in enumerate(reversed(data[:, 0])) if value < Bmax)
     return [first, -1 - last]
 
-
+#  单独测一次和二次
 def fit_and_plot(file_name, data, B_max, fit_result, out_path, test_condition):
     v_w = data[:, 1]  # 谐波电压值，暂未说明几次谐波
     B = data[:, 0]
@@ -119,6 +133,100 @@ def fit_and_plot(file_name, data, B_max, fit_result, out_path, test_condition):
     figure.savefig(out_path + file_name + '.png')
 
     figure.clear()  # 释放内存,没有的话 会把不同曲线画在一个图里，越到后面越多曲线
+
+#  同时测一次和二次谐波电压的数据
+def fit_and_plot_1(file_name, data, B_max, fit_result, out_path, test_condition):
+    v_2w = data[:, 1]  # 原.dat第三列是二次，第四列是一次
+    v_1w = data[:,2]
+    B = data[:, 0]
+
+    fit_order = 0  # 拟合阶数
+    har_order = '0'  # 几次谐波，后面判断再改
+
+    pos = find_first_last(data, B_max)
+    B = B[pos[0]:pos[1]]
+    v_1w = v_1w[pos[0]:pos[1]]  # 只要小场部分
+    v_2w = v_2w[pos[0]:pos[1]]
+
+    # 使用二次拟合谐波电压和场的曲线 ， 得到的f1是拟合的多项式系数，是一个数组
+    f1 = np.polyfit(B, v_1w, 1)  # f1是一个数组，其中第一个是最高阶项拟合系数，次之次高阶 print("数据类型",type(f1))
+    f2 = np.polyfit(B, v_2w, 2)
+
+
+    # 下面四行是绘图用的数据
+    p1 = np.poly1d(f1, False, variable='B')
+    p2 = np.poly1d(f2, False, variable='B')
+    v_1w_fit = p1(B)  # 拟合谐波电压值
+    v_2w_fit = p2(B)
+
+    eff_field = -2000 * f2[0]/f1[0] # v_2w的单位是uV，1w的单位是mV，因此乘上1000
+    test_condition['fit_value'] = eff_field
+
+    #  绘图 1w
+    plot1 = plt.plot(B, v_1w, 's', label="original values")
+    plot2 = plt.plot(B, v_1w_fit, "r", label="polyfit values")
+
+    plt.xlabel('B')
+    plt.ylabel("V_" + "1w")
+    plt.legend(loc=4)  # 指定Legend的位置在右下角
+    plt.title(file_name)
+
+    figure = plt.gcf()  # 获取当前图像
+
+    file_name = file_name[:-4]
+
+    figure.savefig(out_path + file_name + '.png')
+
+    figure.clear()  # 释放内存,没有的话 会把不同曲线画在一个图里，越到后面越多曲线
+
+    plot1 = plt.plot(B, v_2w, 's', label="original values")
+    plot2 = plt.plot(B, v_2w_fit, "r", label="polyfit values")
+
+    plt.xlabel('B')
+    plt.ylabel("V_" + "2w")
+    plt.legend(loc=4)  # 指定Legend的位置在右下角
+    plt.title(file_name)
+
+    figure = plt.gcf()  # 获取当前图像
+
+    file_name = file_name[:-4]
+
+    figure.savefig(out_path + file_name + '.png')
+
+    figure.clear()  # 释放内存,没有的话 会把不同曲线画在一个图里，越到后面越多曲线
+
+
+    # 转换成多项式
+    # test_condition['fit_value'] = f1[0]
+    '''
+    fit_result.append(test_condition)  # 写入测试条件
+
+    p1 = np.poly1d(f1, False, variable='B')
+   
+    v_w_fit = p1(B)  # 拟合谐波电压值
+    '''
+
+    '''
+    #  绘图
+    plot1 = plt.plot(B, v_1w, 's', label="original values")
+    plot2 = plt.plot(B, v_1w_fit, "r", label="polyfit values")
+
+    plt.xlabel('B')
+    plt.ylabel("V_" + har_order + "w")
+    plt.legend(loc=4)  # 指定Legend的位置在右下角
+    plt.title(file_name)
+
+    figure = plt.gcf()  # 获取当前图像
+    # figure.show()
+
+    # figure.savefig("谐波.png", dpi="figure",)  # save the current figure
+    # 删除filename中的后缀名.dat
+    file_name = file_name[:-4]
+
+    figure.savefig(out_path + file_name + '.png')
+
+    figure.clear()  # 释放内存,没有的话 会把不同曲线画在一个图里，越到后面越多曲线
+    '''
 
 def caculate_DL(fit_result):
     delta_Bx=[] #计算结果
