@@ -1,7 +1,7 @@
 import operator
 import utils
 import pprint
-file_position = 'D:\\ptru_gradient\\device 2\\harmonic'
+file_position = 'D:\\ptru_gradient\\device 1\\harmonic'
 file_type = '.dat'
 B_max = 1000  # 设定小场范围
 fit_result = []  # 单个数据文件的拟合结果，包括测试条件和对应谐波的一阶导数或者二阶倒数

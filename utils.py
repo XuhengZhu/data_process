@@ -7,14 +7,12 @@ import matplotlib.pyplot as plt
 def get_file_list(file_position):
     file_list = os.listdir(file_position)
     # 删除非.dat文件 word这些
-    # print(file_list)
     for i in range(len(file_list) - 1, -1, -1):
         if not file_list[i].endswith('.dat'):  # 检查文件类型，word什么的在处理list里删了
             del file_list[i]  # 直接正序索引然后list.remove(element)的话这个迭代器里索引按照原来的数组索引递增，每一个for
             # 索引加一，但是remove后本来下一个文件的实际索引会少一，所以只会处理一半的元素、
             #  解决办法：倒序索引
 
-    # print(file_list)
     # 输出路径
     out_path = file_position + '\\out\\'
     if not os.path.exists(out_path):
@@ -27,9 +25,7 @@ def get_test_condition(file_name):
     # 获取测试条件
     match = r'\d+\.\d+(?=mA)'  # 提取测试电流数值
     current = float(re.search(match, file_name).group())
-    # print(current)
-    # print(type(current))
-    # print("current"+ current)
+
     if not (file_name.find('1w') == -1):  # find（）返回的是找到的元素的索引，找不到返回-1，-1是True
         fit_order = 2
         harm_order = '1'
@@ -129,9 +125,7 @@ def fit_and_plot(file_name, data, B_max, fit_result, out_path, test_condition):
     plt.title(file_name)
 
     figure = plt.gcf()  # 获取当前图像
-    # figure.show()
 
-    # figure.savefig("谐波.png", dpi="figure",)  # save the current figure
     # 删除filename中的后缀名.dat
     file_name = file_name[:-4]
 
@@ -219,7 +213,7 @@ def plot_field(fit_result, out_path):
     figure.clear()  # 释放内存,没有的话 会把不同曲线画在一个图里，越到后面越多曲线
 
 
-def caculate_DL(fit_result):
+def calculate_DL(fit_result):
     delta_Bx = []  # 计算结果
     for i in range(len(fit_result) - 1):
         if fit_result[i]['current'] == fit_result[i + 1]['current'] and fit_result[i]['Mz'] == fit_result[i + 1]['Mz']:
