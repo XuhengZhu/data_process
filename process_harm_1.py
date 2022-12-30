@@ -1,9 +1,13 @@
+"""
+面外体系小场测量二次谐波
+同时测一次和二次的数据
 
+"""
 
 import operator
 import utils
 import pprint
-file_position = 'D:\\Code\\test_data\\A0Vy'
+file_position = 'D:\\ptru_gradient\\retest\\device2\\harm\\Hx'
 file_type = '.dat'
 B_max = 1000  # 设定小场范围
 fit_result = []  # 单个数据文件的拟合结果，包括测试条件和对应谐波的一阶导数或者二阶倒数
