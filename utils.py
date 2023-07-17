@@ -11,13 +11,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import pandas as pd
-
+import pprint
 def get_file_list(file_position):
     file_list = os.listdir(file_position)
     # 删除非.dat文件 word这些
     # print(file_list)
     for i in range(len(file_list) - 1, -1, -1):
-        if not file_list[i].endswith('.dat'):  # 检查文件类型，word什么的在处理list里删了
+        if not (file_list[i].endswith('.txt') or file_list[i].endswith('.dat')):  # 检查文件类型，word什么的在处理list里删了
             del file_list[i]  # 直接正序索引然后list.remove(element)的话这个迭代器里索引按照原来的数组索引递增，每一个for
             # 索引加一，但是remove后本来下一个文件的实际索引会少一，所以只会处理一半的元素、
             #  解决办法：倒序索引
@@ -30,6 +30,27 @@ def get_file_list(file_position):
 
     return file_list, out_path
 
+
+#新的避免转义读取目录的方法
+def get_file_list_11(file_position):
+    file_list = os.listdir(file_position)
+    pprint(file_list)
+    # 删除非.dat文件 word这些
+    # print(file_list)
+    for i in range(len(file_list) - 1, -1, -1):
+        if not (file_list[i].endswith('.txt') or file_list[i].endswith('.dat')):  # 检查文件类型，word什么的在处理list里删了
+            del file_list[i]  # 直接正序索引然后list.remove(element)的话这个迭代器里索引按照原来的数组索引递增，每一个for
+            # 索引加一，但是remove后本来下一个文件的实际索引会少一，所以只会处理一半的元素、
+            #  解决办法：倒序索引
+
+    # print(file_list)
+    # 输出路径
+    out =r'out'
+    out_path = os.path.join(file_position,out)
+    if not os.path.exists(out_path):
+        os.mkdir(out_path)
+
+    return file_list, out_path
 
 def get_test_condition(file_name):
     # 获取测试条件
@@ -61,9 +82,9 @@ def get_test_condition_1(file_name):
     match = r'\d+\.\d+(?=mA)'  # 提取测试电流数值
     current = float(re.search(match, file_name).group())
 
-    if not file_name.find('down') == -1:
+    if not file_name.find('Low') == -1 or not file_name.find('down') == -1:
         Mz = 'down'
-    elif not file_name.find('up') == -1:
+    elif not file_name.find('High') == -1 or not file_name.find('up') == -1:
         Mz = 'up'
     else:
         Mz = '0'  # 数据保存的时候没有表明，考虑直接删了这个数据或者画图跳过
@@ -150,7 +171,7 @@ def fit_and_plot(file_name, data, B_max, fit_result, out_path, test_condition):
 
 #  同时测一次和二次谐波电压的数据
 def fit_and_plot_1(file_name, data, B_max, fit_result, out_path, test_condition):
-    v_1w = data[:, 1]  # 原.dat第三列是二次，第四列是一次
+    v_1w = data[:, 1]  # 原.dat第三列是一次谐波，第四列是二次谐波
     v_2w = data[:, 2]
     B = data[:, 0]
 
@@ -166,7 +187,7 @@ def fit_and_plot_1(file_name, data, B_max, fit_result, out_path, test_condition)
     f1 = np.polyfit(B, v_1w, 2, full=False)  # f1是一个数组，其中第一个是最高阶项拟合系数，次之次高阶 print("数据类型",type(f1))
     f2 = np.polyfit(B, v_2w, 1)
 
-    eff_field = -0.002 * f2[0] / f1[0]  # v_2w的单位是uV，1w的单位是mV，二次的相当于数值增大了1000倍因此除以1000
+    eff_field = -0.001 * f2[0] / f1[0]  # v_2w的单位是uV，1w的单位是mV，二次的相当于数值增大了1000倍因此除以1000
     test_condition['fit_value'] = eff_field
 
     # 下面四行是绘图用的数据
@@ -262,7 +283,7 @@ def calculat_ksi(B_Jc, tf, Ms):
     return ksi
 
 
-## 处理面内转场谐波测试的程序
+##  处理面内转场谐波测试的程序
 ###########################
 ###########################
 
@@ -354,7 +375,7 @@ def del_file_nouse(file_list):
     match_I = r'\d+\.\d+(?=mA)'  # 提取测试电流数值
     match_B = r'\d+(?=Oe)'  # 提取测试磁场大小
     for i in range(len(file_list) - 1, -1, -1):
-        if not bool(re.search(match_B, file_list[i])):
+        if not bool(re.search(match_B, file_list[i])):  # 数据文件名没有标电流值或者磁场的值的数据
             del file_list[i]  # 直接正序索引然后list.remove(element)的话这个迭代器里索引按照原来的数组索引递增，每一个for
         # 索引加一，但是remove后本来下一个文件的实际索引会少一，所以只会处理一半的元素、
         #  解决办法：倒序索引
@@ -431,3 +452,69 @@ def fit_save_csv(result_reshape,out_path):
             df = pd.concat([df, pd.DataFrame({k: result[k]},index= range(0,len(result['field'])))], axis=1)
             aa=aa+1
         df.to_csv(out_path +str(result['current']) +'fit result.csv')
+
+
+def delet_unit(file_position):
+    file_list,a=get_file_list(file_position)
+    out = r'out'
+    for file in file_list:
+        file_path = os.path.join(file_position,file)
+
+        new_path = os.path.join(file_position,out,file)
+        with open(file_path, 'r') as file:
+        # 读取文件中的所有数据
+            data = file.read()
+
+         # 使用正则表达式匹配英文单位，并替换为空字符串
+        data = re.sub(r'[a-zA-Z]+', '', data)
+
+    # 将处理后的数据写回原始文件或者写入一个新文件
+        with open(new_path, 'w') as file:
+            file.write(data)
+
+def delet_unit1(file_position):
+    file_list, a = get_file_list(file_position)
+    out = r'out'
+    for file in file_list:
+        file_path = os.path.join(file_position, file)
+        new_path = os.path.join(file_position, out, file)
+
+        data = np.loadtxt(file_path, skiprows=1, comments='#', dtype=str, delimiter="\t",
+                          unpack=False)  # unpack是一行是一行，一列是一列，false会把列变行
+
+        def convert_units(number, unit):
+            # 将各种单位转换为对应的因子
+            units = {'mV': 1e-3, 'uV': 1e-6, 'V': 1, 'A': 1, 'mA': 1e3, 'uA': 1,
+                     'nA': 1e-3, 'pA': 1e-6, 'fA': 1e-9, 'ohm': 1e-3, 'kohm': 1,
+                     'mohm': 1e3, 's':1}
+            factor = units[unit]
+            # 将字符串中的数字部分提取出来并转换为浮点数
+            number = float(number)
+            # 计算转换后的值并返回
+            return number * factor
+
+        import re
+        newdata = np.empty([data.shape[0], data.shape[1]], dtype=float)
+        for i in range(data.shape[0]):
+            for j in range(data.shape[1]):
+
+                value = data[i, j]
+                # 判断是否带有单位
+                if re.search(r'[a-zA-Z]', value):
+                    # 提取数字和单位
+                    number = re.search(r'[-+]?\d+(?:\.\d+)?', value)[0]
+                    unit = re.search(r'([A-Za-z]+)', value)[0]
+
+                    # 转换单位并将结果存储回数组中
+                    x = convert_units(number, unit)
+                    newdata[i, j] = x
+                else:
+                    newdata[i, j] = float(value)
+        print(newdata)
+
+        np.savetxt(new_path, newdata, delimiter='\t')
+
+
+
+
+
