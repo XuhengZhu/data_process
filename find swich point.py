@@ -50,8 +50,11 @@ def parse_current_and_field(file_name):
     except:
         # 解析出错，返回 None
         return None
+ii = 0
 for file_name in file_list:
-    ii = 1
+    ii= ii%25 + 1
+    if ii == 1:
+        plt.figure(figsize=(14,14))
     try:
         test_condition = parse_current_and_field(file_name)  # 获取测试条件
         data_name = file_position + "\\" + file_name  # 为了更改起来更方便
@@ -59,6 +62,9 @@ for file_name in file_list:
                               unpack=False)  # unpack是一行是一行，一列是一列，false会把列变行
 
         data = data[:,[2,9]]
+        plt.subplot(5,5,ii)
+        plt.scatter(data[:,0],data[:,1],color = 'r',marker='.')
+
         #plt.figure(figsize=(10,10),dpi =72)
         #plt.scatter(data[:,0],data[:,1])
         #plt.show()
@@ -78,12 +84,19 @@ for file_name in file_list:
         x2 = np.mean(fastest_points_x)
 
         loop_shift = (x1+x2)/2
+        plt.axvline(x = loop_shift,ls ='-',c = 'green')
+
+        plt.sbutitle(string(test_condition['field'])+'  '+string(test_condition['current']))
         test_condition['loop_shift'] = loop_shift
         fit_result.append(test_condition)
+        if ii==25:
+            plt.savefig(out_path+'com.png',dpi=1200,bbox_inches='tight', transparent=None)
+
     except:
         print(test_condition)
         print(file_name)
     #print("loop_shift", loop_shift)
+
 
 #保存结果
 
