@@ -46,27 +46,19 @@ def get_sort_key(file_name):
     return(voltage,temperature,direction,field)
 
 file_list = sorted(file_list,key=get_sort_key)
-pprint.pp(file_list)
+
 
 def tmr_normalized(data):
     y_changes = np.diff(data[:, 2])
     max_index = np.argmax(y_changes)
-    max_field = data[max_index,0]
     min_index = np.argmin(y_changes)
     base_r = (np.mean(data[2:max_index-3,2])+np.mean(data[min_index+3:,2]))/2
     data[:,2] = data[:,2]/base_r
-    return data,max_field
-def find_switch(data):
-    y_changes = np.diff(data[:,2])
-    max_index = np.argmax()
+    return data
 def draw_fig():
     return 0
 
 union_path = r'D:\Test_data\2D MTJ\7.19 fget sns2\新建文件夹\\'
-switch_data_pos = r'D:\Test_data\2D MTJ\7.19 fget sns2\switch point\switch point.txt'
-switch_data = np.loadtxt(switch_data_pos, dtype=float,comments ='#',unpack=False)
-
-
 for i in range(len(file_list)-1):
     test_condition1 = parse_conditions(file_list[i])
     for j in range(i+1,len(file_list)):
@@ -77,53 +69,28 @@ for i in range(len(file_list)-1):
 
             data_name2 = file_position + '\\' + file_list[j]
             data1 = np.loadtxt(data_name1, skiprows= 3,usecols=[1,6], dtype=float,comments ='#',unpack=False)
-
-
             new_column1 = test_condition1['direction'] * (
                     0 - test_condition1['magnetic_field'] + (data1[:, 0] - 8) / (0.450 * 320))
-
-            data1 = np.insert(data1,0,new_column1,axis=1) #第一列是磁场，第二列是时间，第三列为隧穿电阻,磁场已经是带有正负号了
-
-            data1,max_field1 = tmr_normalized(data1)
-            bb=0
-
-            for k in range(0,35):
-                if switch_data[k, 0] == test_condition1['temperature'] and switch_data[k, 1] == test_condition1[
-                    'direction'] and switch_data[k, 2] == test_condition2['voltage']:
-                    new_column1 = new_column1 + switch_data[k, 3] - tmr_normalized(data1)[1]
-                    data1[:,0] = new_column1
-                    bb=1
+            data1 = np.insert(data1,0,new_column1,axis=1) #第一列是磁场，第二列是时间，第三列为隧穿电阻
+            data1 = tmr_normalized(data1)
             data2 = np.loadtxt(data_name2, skiprows=3, usecols=[1, 6], dtype=float, comments='#',
                                unpack=False)
             new_column2 = test_condition2['direction'] * (
                     0 - test_condition2['magnetic_field'] + (data2[:, 0] - 8) / (0.450 * 320))
             data2 =np.insert(data2,0,new_column2,axis=1)#第一列是磁场，第二列是时间，第三列为隧穿电阻
-            data2,max_field2 = tmr_normalized(data2)
+            data2 = tmr_normalized(data2)
 
-            for k in range(36):
-                if switch_data[k, 0] == test_condition1['temperature'] and switch_data[k, 1] == test_condition2[
-                    'direction'] and switch_data[k, 2] == test_condition2['voltage']:
-                    new_column2 = new_column2 + switch_data[k, 3] - tmr_normalized(data2)[1]
-                    data2[:,0] = new_column2
-
-            data = np.append(data1, data2, axis=0)  # 组合
-            if bb==0:
-                zero_field = (max_field1+max_field2)/2
-                data[:,0] = data[:,0]-zero_field
-            #重定零点
-
-
+            data = np.append(data1,data2,axis=0)#组合
             union =union_path +file_list[i]
             np.savetxt(union,data)
 
-            plt.plot(data[:,0],data[:,2],label='T '+str(test_condition2['temperature'])+'K'+file_list[i])
+            plt.plot(data[:,0],data[:,2],label='T '+str(test_condition2['temperature'])+'K')
             plt.xlabel('B(T)'),plt.ylabel('TMR')
             plt.legend()
 
-            plt.savefig(out_path + file_list[i][:-3] + '.png', format='png')
-            #plt.show()
-            plt.close()
-            print(max_field1,max_field2)
+            plt.savefig(out_path + file_list[i][:-3] + '.svg', format='svg')
+            plt.show()
+
 
 file_potion =union_path
 file_list, out_path = utils.get_file_list(file_position)
