@@ -9,7 +9,7 @@ import utils
 import numpy as np
 import matplotlib.pyplot as plt
 
-file_position = r'D:\Users\Desktop\MOKE\新建文件夹\Mo_0d5_PtGd_1d5_I_AHE_Hx series_corr'
+file_position = r'D:\Users\Desktop\MOKE\Moke_AHE_loop shift\Moke_AHE_loop shift\Only_PtGd_2_field above 320'
 #file_position1 ='D:\\Users\\Desktop\\MOKE\\test'
 file_type = '.txt'
 
@@ -17,7 +17,7 @@ fit_result = []  # 单个数据文件的拟合结果，包括测试条件和对�
 
 file_list, out_path = utils.get_file_list(file_position)
 #pprint.pprint(file_list)
-
+       
 
 def parse_current_and_field(file_name):
     # 定义正则表达式模式
@@ -74,7 +74,7 @@ for file_name in file_list:
 
         data = data[:,[2,9]]
         ## 删除两边由于仪器问题出现的异常值
-        threshhold = 160
+        threshhold = 260
         indices1, indices2 = np.where(data[:, 0] > threshhold)[0], np.where(data[:, 0] < (-threshhold))[0]
         indices = np.concatenate((indices1, indices2), axis=0)
         data = np.delete(data, indices, axis=0)

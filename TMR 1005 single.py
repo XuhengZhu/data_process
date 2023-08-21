@@ -88,7 +88,7 @@ for i in range(len(file_list)-1):
             plt.xlabel('B(T)'),plt.ylabel('TMR')
             plt.legend()
 
-            plt.savefig(out_path + file_list[i][:-3] + '.svg', format='svg')
+            plt.savefig(out_path + file_list[i][:-3] + '.png', format='png')
             plt.show()
 
 
