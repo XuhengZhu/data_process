@@ -1,4 +1,3 @@
-# induce tmr from iv cureve of ap and p state
 import os
 import re
 import pprint
@@ -17,22 +16,11 @@ fit_result = []  # 单个数据文件的拟合结果，包括测试条件和对�
 file_list, out_path = utils.get_file_list(file_position)
 out_path = file_position + '\\out\\'
 
-def get_test_condition(file_name):
-    # 获取测试条件
-    matcht = r'\d+\.\d+(?=k)'  # 提取测试温度
-    matchp = r'ap'
-    temp = float(re.search(matcht, file_name).group())
-    state = int(re.search(matchp, file_name).group()) #找到了反平行为1，平行为0
-
-    test_condition = {'temp': temp, 'state': state}
-    return test_condition
-    # 获取条件结束
-
 
 for file_name in file_list:
     data_name = file_position + "\\" + file_name  # 为了更改起来更方便
 
-    data = np.loadtxt(data_name, skiprows=1, usecols=range(1, 6), dtype=float, comments='#',
+    data = np.loadtxt(data_name, dtype=float, comments='#',
                       unpack=False)  # unpack是一行是一行，一列是一列，false会把列变行,range(1,5)为处理iv
 
     # 去掉大场部分，先排序,这里只做了排序
@@ -44,13 +32,13 @@ for file_name in file_list:
     data[:,1] = -1*data[:,1]
     '''
     # 创建空列表存储结果
-
+    '''
     result = []
     for x in unique_x:
         y_values = data[data[:, 0] == x, 1:]  # 选择除第一列外的所有列
         average_y = np.mean(y_values, axis=0)
         result.append([x] + list(average_y))
+    '''
+    f2 = np.polyfit(data[:,0],data[:,1], 1)
     data = result
     np.savetxt(out_path + file_name, data)
-
-

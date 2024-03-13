@@ -472,7 +472,7 @@ def delet_unit(file_position):
         with open(new_path, 'w') as file:
             file.write(data)
 
-def delet_unit1(file_position):
+def delet_unit1(file_position):#删除B1500数据的单位
     file_list, a = get_file_list(file_position)
     out = r'out'
     for file in file_list:
@@ -486,7 +486,7 @@ def delet_unit1(file_position):
             # 将各种单位转换为对应的因子
             units = {'mV': 1e-3, 'uV': 1e-6, 'V': 1, 'A': 1, 'mA': 1e3, 'uA': 1,
                      'nA': 1e-3, 'pA': 1e-6, 'fA': 1e-9, 'ohm': 1e-3, 'kohm': 1,
-                     'mohm': 1e3, 's':1}
+                     'Mohm': 1e3, 's':1}
             factor = units[unit]
             # 将字符串中的数字部分提取出来并转换为浮点数
             number = float(number)
