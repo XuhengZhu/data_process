@@ -10,11 +10,11 @@ dos_up = data[:, 1]
 dos_down = np.abs(data[:, 2])  # 使用绝对值
 
 # 设置偏压范围
-vb_range = np.linspace(-1.5, 1.5, 2000)  # 从-1.5到1.5的偏压,间隔0.005
+vb_range = np.linspace(-1.5, 1.5, 1000)  # 从-1.5到1.5的偏压,间隔0.005
 
 # 存储TMR结果
 tmr_values = []
-def cal_conduct(vb_range, dos_up, dos_down):
+def cal_conduct(vb_range,energy, dos_up, dos_down):
     conductance_p = np.zeros(len(vb_range))
     conductance_ap = np.zeros(len(vb_range))
     i = 0
@@ -44,28 +44,12 @@ def cal_conduct(vb_range, dos_up, dos_down):
         i+=1
     return conductance_p, conductance_ap
 
-conductance_p, conductance_ap = cal_conduct(vb_range, dos_up, dos_down)
+conductance_p, conductance_ap = cal_conduct(vb_range,energy, dos_up, dos_down)
 # 计算不同偏压下的TMR
 tmr = np.where(conductance_ap != 0, (conductance_p - conductance_ap) / conductance_ap, 0)
 tmr_values.append(tmr)
 
-# 绘制图表
-plt.figure(figsize=(8, 6))
-plt.plot(vb_range, tmr, label='TMR vs Vb')
-plt.xlabel('Bias Voltage (V)')
-plt.ylabel('TMR')
-plt.title('Tunneling Magnetoresistance vs Bias Voltage')
-plt.grid(True)
-plt.legend()
 
-#data = np.insert(vb_range, 0, tmr_values, axis=1)  # a  xis =1 插入列，axis=0，插入行
-data = np.transpose(np.vstack((vb_range,tmr_values)))
-#data = np.append(vb_range,tmr_values,axis=0)
-# 保存图表
-path =r"D:\Users\Desktop\计算\FeGaTe\新建文件夹\0"
-plt.savefig(path + 'tmr_vs_bias_voltage.png')
 
-np.savetxt(path + 'tmr_vs_bias_voltage.txt',data)
 
-# 显示图表
-plt.show()
+
