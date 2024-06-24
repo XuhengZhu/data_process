@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 plt.rcParams['font.sans-serif'] = ['SimHei']	# 显示中文 非衬线字体为黑体
 plt.rcParams['axes.unicode_minus'] = False	#显示负号
 
-file_position = r'E:\shiyan\2.7FGaTGaSeFGeT\7k\tmr'
+file_position = r"D:\Users\Desktop\重要同步\Fe5GeTe2 homo"
 
 file_type = '.txt'
 

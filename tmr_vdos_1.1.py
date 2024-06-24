@@ -3,17 +3,25 @@ import matplotlib.pyplot as plt
 from scipy.integrate import simps
 from scipy import interpolate
 ##作为早期版本的备份，不会报错无法判断相除的地方的警告
+eV = 1.6022E-19
+h_bar = 1.05257E-34
+d = 5E-9
+m = 9.1E-31
+m_eff = 0.1
+# 设置偏压范围
+vb_range = np.linspace(-1.5, 1.5, 1000)  # 从-1.5到1.5的偏压,间隔0.005
 
 
 # 加载数据
-filename = r"D:\Users\Desktop\计算\FeGaTe\414113\atdos_tmr_w.dat"# 替换为你的文件名
+#filename = r"D:\Users\Desktop\计算\FeGeTe\最新\TDOS.dat"# 替换为你的文件名
+filename = r"D:\Users\Desktop\计算\FeGaTe\47 47 17\dos_eff_FGaT.txt"
 data = np.loadtxt(filename,skiprows=1)
 energy = data[:, 0]
 dos_up = data[:, 1]
 dos_down = np.abs(data[:, 2])  # 使用绝对值
 
 # 设置偏压范围
-vb_range = np.linspace(-1.5, 1.5, 2000)  # 从-1.5到1.5的偏压,间隔0.005
+vb_range = np.linspace(-1.5, 1.5, 1000)  # 从-1.5到1.5的偏压,间隔0.005
 
 # 存储TMR结果
 tmr_values = []
@@ -47,6 +55,7 @@ for vb in vb_range:
     tmr = (cp - cap) / cap if cap != 0 else 0
     tmr_values.append(tmr)
 
+
 # 绘制图表
 plt.figure(figsize=(8, 6))
 plt.plot(vb_range, tmr_values, label='TMR vs Vb')
@@ -60,10 +69,10 @@ plt.legend()
 data = np.transpose(np.vstack((vb_range,tmr_values)))
 #data = np.append(vb_range,tmr_values,axis=0)
 # 保存图表
-path =r"D:\Users\Desktop\计算\FeGaTe\新建文件夹\0"
-plt.savefig(path + 'tmr_vs_bias_voltage.png')
+path =r"D:\Users\Desktop\计算\FeGeTe\最新"
+plt.savefig(path + r'\tmr_vs_bias_voltage.png')
 
-np.savetxt(path + 'tmr_vs_bias_voltage.txt',data)
+np.savetxt(path + r'\tmr_vs_bias_voltage.txt',data)
 
 # 显示图表
 plt.show()

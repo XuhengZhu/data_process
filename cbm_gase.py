@@ -42,7 +42,7 @@ def read_eigenval_file_corrected(filepath,e_fermi):
     return k_points, bands
 
 e_fermi = 1.941
-filepath = r'D:\Users\Desktop\计算\GaSe\EIGENVAL_GGA_txt'
+filepath = r"D:\Users\Desktop\计算\GaSe\474713\EIGENVAL"
 k_points, bands = read_eigenval_file_corrected(filepath,e_fermi)
 
 # %%
@@ -74,45 +74,54 @@ def convert_to_cartesian(k_points, a=1, a_abs=3.98E-9, c=1):
     ax_a = fig.add_subplot(122, projection='3d')
     ax_a.scatter(kx_a,ky_a,kz_a)
     ax_a.set_xlabel('kx'),ax_a.set_ylabel('ky'),ax_a.set_zlabel('kz')
-    plt.savefig('data/k_r.png')
+    plt.savefig('data/65651k_r.png')
     plt.show()
     return cartesian_coords, cartesian_coords_abs
 
 
 # 执行转换
 k_points, k_points_abs = convert_to_cartesian(k_points)
-np.savetxt('data/kxkykzweight.txt', k_points)
+np.savetxt('data/474713kxkykzweight.txt', k_points)
 
 #%%
 # 找cbm
 def cbm_cal(k_points, bands, e_fermi):
     cbm_map ={}
+    vbm_map = {}
     cbms = []
     cbma = 10
     for i, (kx, ky, _, _) in enumerate(k_points):
         if (kx,ky) not in cbm_map:
             cbm_map[(kx,ky)] = cbma-e_fermi
+        if (kx,ky) not in vbm_map:
+            vbm_map[(kx,ky)] = -cbma-e_fermi
         for band in bands[i]:
             _, energe, _ = band
             if band[2]<0.50:
                 if energe-e_fermi < cbm_map[(kx,ky)]:
                     cbm_map[(kx,ky)] = energe-e_fermi
+            else:
+                if energe-e_fermi >vbm_map[(kx,ky)]:
+                    vbm_map[(kx,ky)] = energe-e_fermi
     print(len(cbm_map))
-    return cbm_map
+    return cbm_map, vbm_map
 
-cbm_map = cbm_cal(k_points,bands,e_fermi)
-d_save = open('data/cbm_map.pkl','wb')
+cbm_map, vbm_map = cbm_cal(k_points,bands,e_fermi)
+d_save = open('data/474713cbm_map.pkl','wb')
+f_save = open('data/474713vbm_map.pkl','wb')
 pickle.dump(cbm_map,d_save)
+pickle.dump(vbm_map,f_save)
 d_save.close()
-with open('data/cbm_map.pkl','rb') as f:
+f_save.close()
+with open('data/474713cbm_map.pkl','rb') as f:
     loaded_cbm_map = pickle.load(f)
 print(loaded_cbm_map)
-np.save('data/cbm_map.npy',cbm_map)
+#np.save('data/cbm_map.npy',cbm_map)
 
 print((cbm_map))
 
 #%% 旋转和对称变换
-def rotate(theta, cbm_map)
+def rotate(theta, cbm_map):
     kx = cbm_map
 
 #%%

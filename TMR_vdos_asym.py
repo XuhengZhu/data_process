@@ -1,16 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import simps
+from scipy import interpolate
+##作为早期版本的备份，不会报错无法判断相除的地方的警告
+
 
 # 加载数据
-filename = r"D:\Users\Desktop\计算\FeGaTe\3\test4.txt"# 替换为你的文件名
-data = np.loadtxt(filename)
+filename = r"D:\Users\Desktop\计算\FeGeTe\最新\TDOS.dat"# 替换为你的文件名
+data = np.loadtxt(filename,skiprows=1)
 energy = data[:, 0]
-dos_up = data[:, 2]
-dos_down = np.abs(data[:, 1])  # 使用绝对值
+dos_up = data[:, 1]
+dos_down = np.abs(data[:, 2])  # 使用绝对值
 
 # 设置偏压范围
-vb_range = np.linspace(-1.5, 1.5, 1000)  # 从-1.5到1.5的偏压,间隔0.005
+vb_range = np.linspace(-1.5, 1.5, 2000)  # 从-1.5到1.5的偏压,间隔0.005
 
 # 存储TMR结果
 tmr_values = []
@@ -27,11 +30,13 @@ for vb in vb_range:
         continue
 
     # 生成积分使用的DOS值
+
     dos_up_low = np.interp(e_range - vb / 2, energy, dos_up, left=0, right=0)
     dos_up_high = np.interp(e_range + vb / 2, energy, dos_up, left=0, right=0)
     dos_down_low = np.interp(e_range - vb / 2, energy, dos_down, left=0, right=0)
     dos_down_high = np.interp(e_range + vb / 2, energy, dos_down, left=0, right=0)
-    print(dos_down_high)
+
+
     # 计算平行态电导
     cp = simps(dos_up_low * dos_up_high + dos_down_low * dos_down_high, e_range)
     #cp = np.sum(dos_up_low * dos_up_high + dos_down_low * dos_down_high)
@@ -55,7 +60,7 @@ plt.legend()
 data = np.transpose(np.vstack((vb_range,tmr_values)))
 #data = np.append(vb_range,tmr_values,axis=0)
 # 保存图表
-path =r"D:\Users\Desktop\计算\FeGaTe\新建文件夹\0"
+path =r"D:\Users\Desktop\计算\FeGeTe\最新"
 plt.savefig(path + 'tmr_vs_bias_voltage.png')
 
 np.savetxt(path + 'tmr_vs_bias_voltage.txt',data)
